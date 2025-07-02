@@ -414,7 +414,12 @@ export function calculateXIRR(cashFlows: CashFlow[]): XIRRCalculation {
   const annualizedReturn = xirr;
 
   // Generate cumulative data for visualization
-  const cumulativeData = [];
+  const cumulativeData: Array<{
+    date: string;
+    cumulativeInvestment: number;
+    cumulativeReturns: number;
+    netPosition: number;
+  }> = [];
   let cumulativeInvestment = 0;
   let cumulativeReturns = 0;
   

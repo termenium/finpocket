@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, Cell } from 'recharts';
 import { calculateXIRR, formatCurrency, formatNumber } from '@/utils/calculations';
 import { useCurrency } from '@/components/currency-provider';
 import { CashFlow, XIRRCalculation } from '@/types/calculator';
@@ -438,11 +438,11 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                             fontSize: '12px'
                           }}
                         />
-                        <Bar 
-                          dataKey="amount" 
-                          fill={(entry: any) => entry.amount >= 0 ? '#10b981' : '#ef4444'}
-                          radius={[4, 4, 0, 0]}
-                        />
+                        <Bar dataKey="amount" radius={[4, 4, 0, 0]}>
+                          {result.cashFlows.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.amount >= 0 ? '#10b981' : '#ef4444'} />
+                          ))}
+                        </Bar>
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
