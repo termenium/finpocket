@@ -302,7 +302,7 @@ Calculated using FinPocket - Professional Financial Calculators`;
                 <CardContent>
                   <div className="space-y-6">
                     {/* Main Conversion Display */}
-                    <div className="text-center p-6 sm:p-8 rounded-xl bg-gradient-to-br from-primary/5 to-primary/10 border">
+                    <div className="text-center p-6 sm:p-8 rounded-xl bg-muted/50 border">
                       <div className="space-y-2">
                         <p className="text-lg sm:text-xl text-muted-foreground">
                           {amount.toLocaleString()} {result.from}
@@ -402,7 +402,7 @@ Calculated using FinPocket - Professional Financial Calculators`;
                           <Line 
                             type="monotone" 
                             dataKey="rate" 
-                            stroke="#10b981" 
+                            stroke="#18181b" 
                             strokeWidth={3}
                             dot={false}
                             name={`${result.from}/${result.to} Rate`}

@@ -335,13 +335,13 @@ Calculated using FinPocket - Professional Financial Calculators`;
                       Real Values (Inflation-Adjusted at {result.inflationRate}%)
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-center">
-                      <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-warning-soft">
+                      <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-muted/50">
                         <p className="text-sm sm:text-base text-muted-foreground">Real Expected Returns</p>
                         <p className="text-xl sm:text-2xl font-bold text-warning">
                           {formatCurrency(result.realExpectedReturns || 0, currency)}
                         </p>
                       </div>
-                      <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-warning-soft">
+                      <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-muted/50">
                         <p className="text-sm sm:text-base text-muted-foreground">Real Maturity Value</p>
                         <p className="text-xl sm:text-2xl font-bold text-warning">
                           {formatCurrency(result.realMaturityValue || 0, currency)}

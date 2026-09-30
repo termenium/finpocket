@@ -12,7 +12,7 @@ interface CalculatorLayoutProps {
 
 export function CalculatorLayout({ title, description, children }: CalculatorLayoutProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+    <div className="min-h-screen">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-7xl">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
           <Link href="/">

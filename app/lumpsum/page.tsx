@@ -335,13 +335,13 @@ Calculated using FinPocket - Professional Financial Calculators`;
                       Real Values (Inflation-Adjusted at {result.inflationRate}%)
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-center">
-                      <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-warning-soft">
+                      <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-muted/50">
                         <p className="text-sm sm:text-base text-muted-foreground">Real Total Returns</p>
                         <p className="text-xl sm:text-2xl font-bold text-warning">
                           {formatCurrency(result.realTotalReturns || 0, currency)}
                         </p>
                       </div>
-                      <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-warning-soft">
+                      <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-muted/50">
                         <p className="text-sm sm:text-base text-muted-foreground">Real Maturity Value</p>
                         <p className="text-xl sm:text-2xl font-bold text-warning">
                           {formatCurrency(result.realMaturityValue || 0, currency)}
@@ -393,8 +393,8 @@ Calculated using FinPocket - Professional Financial Calculators`;
                       <Area 
                         type="monotone" 
                         dataKey="value" 
-                        stroke="#10b981" 
-                        fill="#10b981" 
+                        stroke="#18181b" 
+                        fill="#18181b" 
                         fillOpacity={0.6}
                         name="value"
                         isAnimationActive={false}
@@ -403,8 +403,8 @@ Calculated using FinPocket - Professional Financial Calculators`;
                         <Area 
                           type="monotone" 
                           dataKey="realValue" 
-                          stroke="#f59e0b" 
-                          fill="#f59e0b" 
+                          stroke="#71717a" 
+                          fill="#71717a" 
                           fillOpacity={0.4}
                           name="realValue"
                           isAnimationActive={false}

@@ -239,7 +239,7 @@ Calculated using FinPocket - Professional Financial Calculators`;
             </div>
 
             {/* Helper Text */}
-            <div className="p-4 bg-info-soft rounded-xl">
+            <div className="p-4 bg-muted/50 rounded-xl">
               <div className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-primary mt-0.5" />
                 <div className="text-sm text-foreground">
@@ -311,7 +311,7 @@ Calculated using FinPocket - Professional Financial Calculators`;
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-center">
-                    <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20">
+                    <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-muted/50 border">
                       <div className="flex items-center justify-center gap-2 mb-2">
                         <TrendingUp className="w-5 h-5 text-success" />
                         <p className="text-sm sm:text-base text-muted-foreground">XIRR (Annualized Return)</p>
@@ -393,28 +393,28 @@ Calculated using FinPocket - Professional Financial Calculators`;
                         <Line 
                           type="monotone" 
                           dataKey="cumulativeInvestment" 
-                          stroke="#ef4444" 
+                          stroke="#3f3f46" 
                           strokeWidth={3}
-                          dot={{ fill: '#ef4444', strokeWidth: 2, r: 4 }}
+                          dot={{ fill: '#3f3f46', strokeWidth: 2, r: 4 }}
                           name="cumulativeInvestment"
                           isAnimationActive={false}
                         />
                         <Line 
                           type="monotone" 
                           dataKey="cumulativeReturns" 
-                          stroke="#10b981" 
+                          stroke="#18181b" 
                           strokeWidth={3}
-                          dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
+                          dot={{ fill: '#18181b', strokeWidth: 2, r: 4 }}
                           name="cumulativeReturns"
                           isAnimationActive={false}
                         />
                         <Line 
                           type="monotone" 
                           dataKey="netPosition" 
-                          stroke="#3b82f6" 
+                          stroke="#52525b" 
                           strokeWidth={3}
                           strokeDasharray="5 5"
-                          dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                          dot={{ fill: '#52525b', strokeWidth: 2, r: 4 }}
                           name="netPosition"
                           isAnimationActive={false}
                         />
@@ -460,7 +460,7 @@ Calculated using FinPocket - Professional Financial Calculators`;
                         />
                         <Bar dataKey="amount" radius={[4, 4, 0, 0]} isAnimationActive={false}>
                           {result.cashFlows.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.amount >= 0 ? '#10b981' : '#ef4444'} />
+                            <Cell key={`cell-${index}`} fill={entry.amount >= 0 ? '#18181b' : '#3f3f46'} />
                           ))}
                         </Bar>
                       </BarChart>

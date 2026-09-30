@@ -2,164 +2,203 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Calculator, TrendingUp, CreditCard, PiggyBank, Menu, X, LineChart, DollarSign, BarChart, Receipt } from 'lucide-react';
+import {
+  TrendingUp,
+  CreditCard,
+  PiggyBank,
+  Menu,
+  LineChart,
+  DollarSign,
+  BarChart3,
+  Receipt,
+  Sparkles,
+  ArrowUpRight,
+} from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { CurrencySelector } from '@/components/currency-selector';
-import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 
 const navigation = [
-  { name: 'Home', href: '/', icon: Calculator },
   { name: 'SIP', href: '/sip', icon: TrendingUp },
   { name: 'Lump Sum', href: '/lumpsum', icon: PiggyBank },
   { name: 'EMI', href: '/emi', icon: CreditCard },
   { name: 'CAGR', href: '/cagr', icon: LineChart },
-  { name: 'XIRR', href: '/xirr', icon: BarChart },
+  { name: 'XIRR', href: '/xirr', icon: BarChart3 },
   { name: 'Currency', href: '/currency-converter', icon: DollarSign },
   { name: 'Tax', href: '/tax-calculator', icon: Receipt },
 ];
+
+/** Wordmark: geometric chip + tracking-tight name */
+function Wordmark() {
+  return (
+    <Link href="/" className="group flex items-center gap-2.5 shrink-0">
+      <span className="relative flex h-8 w-8 items-center justify-center rounded-xl bg-foreground text-background shadow-sm transition-transform duration-300 group-hover:rotate-6 group-hover:scale-105">
+        <span className="text-[15px] font-black leading-none">F</span>
+        <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-muted-foreground ring-2 ring-background" />
+      </span>
+      <span className="flex flex-col leading-none">
+        <span className="text-[17px] font-bold tracking-tight text-foreground">
+          FinPocket
+        </span>
+        <span className="text-[9px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+          Calculators
+        </span>
+      </span>
+    </Link>
+  );
+}
 
 export function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-50 w-full">
-      <div className="container mx-auto px-3 sm:px-4 lg:px-8 pt-2 sm:pt-3">
-        <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border border-border/40 rounded-xl shadow-sm">
-          <div className="flex h-12 sm:h-14 lg:h-16 items-center justify-between px-3 sm:px-4 lg:px-6">
-            {/* Logo Section */}
-            <div className="flex items-center min-w-0">
-              <Link href="/" className="flex items-center space-x-2 sm:space-x-3 shrink-0">
-                <Calculator className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                <span className="text-base sm:text-lg lg:text-xl font-bold text-foreground truncate">
-                  FinPocket
-                </span>
-              </Link>
-            </div>
-            
-            {/* Desktop Navigation - labels always visible; tooltip + full touch size */}
-            <div className="hidden xl:flex items-center justify-center flex-1 px-8">
-              <TooltipProvider delayDuration={300}>
-                <div className="flex items-center space-x-0.5">
+    <>
+      <header className="sticky top-0 z-50 w-full">
+        <div className="container mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 pt-3">
+          <div className="relative rounded-2xl border border-border/60 bg-background/70 shadow-lg shadow-black/[0.03] backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 dark:shadow-black/20">
+            <div className="flex h-14 sm:h-16 items-center justify-between gap-3 px-3 sm:px-5">
+              <Wordmark />
+
+              {/* ---------- Desktop pill nav ---------- */}
+              <nav
+                aria-label="Primary"
+                className="absolute left-1/2 hidden -translate-x-1/2 lg:block"
+              >
+                <div className="flex items-center gap-0.5 rounded-full border border-border/50 bg-muted/60 p-1">
                   {navigation.map((item) => {
                     const Icon = item.icon;
                     const isActive = pathname === item.href;
-                    
+
                     return (
-                      <Tooltip key={item.name}>
-                        <TooltipTrigger asChild>
-                          <Link href={item.href} className="min-w-[44px] min-h-[44px] flex items-center justify-center">
-                            <Button
-                              variant={isActive ? 'secondary' : 'ghost'}
-                              size="sm"
-                              aria-current={isActive ? 'page' : undefined}
-                              className={cn(
-                                'flex items-center justify-center gap-1.5 rounded-lg text-xs font-medium transition-all duration-200 px-2 min-h-[44px]',
-                                isActive && 'bg-secondary shadow-sm'
-                              )}
-                            >
-                              <Icon className="h-4 w-4 shrink-0" />
-                              <span className="hidden lg:inline xl:hidden 2xl:inline text-[11px] leading-none whitespace-nowrap">
-                                {item.name}
-                              </span>
-                            </Button>
-                          </Link>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom">
-                          {item.name}
-                        </TooltipContent>
-                      </Tooltip>
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        aria-current={isActive ? 'page' : undefined}
+                        className={cn(
+                          'relative flex h-9 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-medium transition-all duration-200',
+                          isActive
+                            ? 'bg-background text-foreground shadow-sm ring-1 ring-border/60'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-background/60'
+                        )}
+                      >
+                        <Icon
+                          className={cn(
+                            'h-3.5 w-3.5 shrink-0 transition-transform duration-200',
+                            !isActive && 'group-hover:scale-110'
+                          )}
+                        />
+                        <span className="whitespace-nowrap">{item.name}</span>
+                      </Link>
                     );
                   })}
                 </div>
-              </TooltipProvider>
-            </div>
+              </nav>
 
-            {/* Right Section - Controls */}
-            <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
-              {/* Currency Selector - always visible so it is discoverable on all screens */}
-              <CurrencySelector />
-              
-              {/* Theme Toggle */}
-              <ThemeToggle />
-              
-              {/* Mobile/Tablet Navigation */}
-              <Sheet open={isOpen} onOpenChange={setIsOpen}>
-                <SheetTrigger asChild className="xl:hidden">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="w-8 h-8 sm:w-9 sm:h-9 px-0 rounded-lg"
+              {/* ---------- Right controls ---------- */}
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                {/* Symbol-only chip on phones; expands to symbol + code on sm+ via CSS */}
+                <CurrencySelector />
+
+                <ThemeToggle />
+
+                {/* Mobile menu trigger */}
+                <Sheet open={isOpen} onOpenChange={setIsOpen}>
+                  <SheetTrigger asChild className="lg:hidden">
+                    <button
+                      type="button"
+                      aria-label="Open menu"
+                      className="flex h-10 w-10 items-center justify-center rounded-xl border border-border/60 bg-background text-foreground transition-all hover:bg-muted active:scale-95 lg:hidden"
+                    >
+                      <Menu className="h-4 w-4" />
+                      <span className="sr-only">Open menu</span>
+                    </button>
+                  </SheetTrigger>
+
+                  <SheetContent
+                    side="top"
+                    className="h-auto max-h-[85dvh] overflow-y-auto rounded-b-3xl border-x-0 border-t-0 bg-background/95 backdrop-blur-xl p-0"
                   >
-                    {isOpen ? (
-                      <X className="h-4 w-4 sm:h-5 sm:w-5" />
-                    ) : (
-                      <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
-                    )}
-                    <span className="sr-only">Toggle menu</span>
-                  </Button>
-                </SheetTrigger>
-                <SheetContent 
-                  side="right" 
-                  className="w-[280px] sm:w-[320px] rounded-l-xl border-l"
-                >
-                  <DialogTitle className="sr-only">FinPocket Navigation</DialogTitle>
-                  
-                  {/* Mobile Header */}
-                  <div className="flex flex-col space-y-6 mt-6">
-                    <div className="flex items-center space-x-3 px-2">
-                      <Calculator className="h-6 w-6 text-primary" />
-                      <span className="text-xl font-bold">FinPocket</span>
-                    </div>
-                    
-                    {/* Navigation Links */}
-                    <div className="border-t pt-4">
-                      <div className="grid gap-1">
+                    <DialogTitle className="sr-only">FinPocket navigation</DialogTitle>
+
+                    <div className="px-5 pb-7 pt-5 sm:px-7">
+                      {/* Sheet header */}
+                      <div className="flex items-center justify-between border-b border-border/60 pb-4">
+                        <SheetTitle asChild>
+                          <div>
+                            <Wordmark />
+                          </div>
+                        </SheetTitle>
+                        <ThemeToggle />
+                      </div>
+
+                      {/* Grid of calculator links (2 cols) */}
+                      <div className="mt-5 grid grid-cols-2 gap-2">
                         {navigation.map((item) => {
                           const Icon = item.icon;
                           const isActive = pathname === item.href;
-                          
+
                           return (
-                            <Link 
-                              key={item.name} 
-                              href={item.href} 
+                            <Link
+                              key={item.name}
+                              href={item.href}
                               onClick={() => setIsOpen(false)}
+                              className={cn(
+                                'group flex items-center gap-3 rounded-xl border p-3.5 transition-all active:scale-[0.98]',
+                                isActive
+                                  ? 'border-foreground/20 bg-muted shadow-sm'
+                                  : 'border-border/50 bg-card hover:bg-muted/60'
+                              )}
                             >
-                              <Button
-                                variant={isActive ? 'secondary' : 'ghost'}
-                                size="lg"
+                              <span
                                 className={cn(
-                                  'w-full justify-start space-x-3 h-12 rounded-lg font-medium transition-all duration-200',
-                                  isActive && 'bg-secondary shadow-sm'
+                                  'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors',
+                                  isActive
+                                    ? 'bg-foreground text-background'
+                                    : 'bg-muted text-foreground group-hover:bg-background'
                                 )}
                               >
-                                <Icon className="h-5 w-5" />
-                                <span className="text-base">{item.name}</span>
-                              </Button>
+                                <Icon className="h-4 w-4" />
+                              </span>
+                              <span className="min-w-0">
+                                <span className="block truncate text-sm font-semibold text-foreground">
+                                  {item.name}
+                                </span>
+                                <span className="block text-[11px] text-muted-foreground">
+                                  Open calculator
+                                </span>
+                              </span>
+                              <ArrowUpRight className="ml-auto h-3.5 w-3.5 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
                             </Link>
                           );
                         })}
                       </div>
-                    </div>
-                    
-                    {/* Mobile Footer Info */}
-                    <div className="border-t pt-4 px-2">
-                      <div className="text-xs text-muted-foreground text-center">
-                        Professional Financial Calculators
+
+                      {/* Sheet footer */}
+                      <div className="mt-5 flex items-center justify-between border-t border-border/60 pt-4">
+                        <span className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                          <Sparkles className="h-3 w-3" />
+                          Free · Private · Instant
+                        </span>
+                        <Link
+                          href="/"
+                          onClick={() => setIsOpen(false)}
+                          className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                        >
+                          Home
+                        </Link>
                       </div>
                     </div>
-                  </div>
-                </SheetContent>
-              </Sheet>
+                  </SheetContent>
+                </Sheet>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </nav>
+      </header>
+    </>
   );
 }

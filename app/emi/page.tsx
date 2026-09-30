@@ -336,7 +336,7 @@ Calculated using FinPocket - Professional Financial Calculators`;
                       Real Values (Inflation-Adjusted at {result.inflationRate}%)
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-center">
-                      <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-warning-soft">
+                      <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-muted/50">
                         <p className="text-sm sm:text-base text-muted-foreground">Real EMI Value</p>
                         <p className="text-xl sm:text-2xl font-bold text-warning">
                           {formatCurrency(result.realEMI || 0, currency)}
@@ -345,7 +345,7 @@ Calculated using FinPocket - Professional Financial Calculators`;
                           (Average purchasing power)
                         </p>
                       </div>
-                      <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-warning-soft">
+                      <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-muted/50">
                         <p className="text-sm sm:text-base text-muted-foreground">Real Total Payable</p>
                         <p className="text-xl sm:text-2xl font-bold text-warning">
                           {formatCurrency(result.realTotalPayable || 0, currency)}
@@ -420,15 +420,15 @@ Calculated using FinPocket - Professional Financial Calculators`;
                         }}
                       />
                       <Legend />
-                      <Bar dataKey="principal" stackId="a" fill="#10b981" name="principal" isAnimationActive={false} />
-                      <Bar dataKey="interest" stackId="a" fill="#f59e0b" name="interest" isAnimationActive={false} />
+                      <Bar dataKey="principal" stackId="a" fill="#18181b" name="principal" isAnimationActive={false} />
+                      <Bar dataKey="interest" stackId="a" fill="#71717a" name="interest" isAnimationActive={false} />
                       {showInflationAdjustment && (
                         <Line 
                           type="monotone" 
                           dataKey="realEMI" 
-                          stroke="#f97316" 
+                          stroke="#a1a1aa" 
                           strokeWidth={3}
-                          dot={{ fill: '#f97316', strokeWidth: 2, r: 4 }}
+                          dot={{ fill: '#a1a1aa', strokeWidth: 2, r: 4 }}
                           name="realEMI"
                           isAnimationActive={false}
                         />

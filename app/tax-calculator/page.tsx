@@ -110,7 +110,7 @@ Calculated using FinPocket - Professional Financial Calculators`;
     }
   }, [grossIncome, deductions, selectedCountry]);
 
-  const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+  const CHART_COLORS = ['#52525b', '#18181b', '#71717a', '#3f3f46', '#a1a1aa', '#d4d4d8'];
 
   return (
     <CalculatorLayout
@@ -272,25 +272,25 @@ Calculated using FinPocket - Professional Financial Calculators`;
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-center">
-                  <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-info-soft">
+                  <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-muted/50">
                     <p className="text-sm sm:text-base text-muted-foreground">Gross Income</p>
                     <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary">
                       {formatCurrency(result.grossIncome, selectedCountry.currency)}
                     </p>
                   </div>
-                  <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-success-soft">
+                  <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-muted/50">
                     <p className="text-sm sm:text-base text-muted-foreground">Total Deductions</p>
                     <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-success">
                       {formatCurrency(result.totalDeductions, selectedCountry.currency)}
                     </p>
                   </div>
-                  <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-warning-soft">
+                  <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-muted/50">
                     <p className="text-sm sm:text-base text-muted-foreground">Taxable Income</p>
                     <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-warning">
                       {formatCurrency(result.taxableIncome, selectedCountry.currency)}
                     </p>
                   </div>
-                  <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-danger-soft">
+                  <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-muted/50">
                     <p className="text-sm sm:text-base text-muted-foreground">Total Tax</p>
                     <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-destructive">
                       {formatCurrency(result.totalTax, selectedCountry.currency)}
@@ -345,7 +345,7 @@ Calculated using FinPocket - Professional Financial Calculators`;
                       />
                       <Bar 
                         dataKey="taxOnSlab" 
-                        fill="#ef4444" 
+                        fill="#3f3f46" 
                         radius={[4, 4, 0, 0]}
                       />
                     </BarChart>
@@ -377,7 +377,7 @@ Calculated using FinPocket - Professional Financial Calculators`;
                         labelLine={false}
                         label={({ name, percent }) => `${name} ${(percent * 100).toFixed(1)}%`}
                         outerRadius={120}
-                        fill="#8884d8"
+                        fill="#a1a1aa"
                         dataKey="value"
                       >
                         {[

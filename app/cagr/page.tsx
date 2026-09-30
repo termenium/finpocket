@@ -335,7 +335,7 @@ Calculated using FinPocket - Professional Financial Calculators`;
                       Real Values (Inflation-Adjusted at {result.inflationRate}%)
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-center">
-                      <div className="space-y-1 p-3 sm:p-4 rounded-lg bg-warning-soft">
+                      <div className="space-y-1 p-3 sm:p-4 rounded-lg bg-muted/50">
                         <p className="text-xs sm:text-sm text-muted-foreground">Real CAGR</p>
                         <p className="text-lg sm:text-xl font-bold text-warning">
                           {result.realCAGR.toFixed(2)}%
@@ -344,7 +344,7 @@ Calculated using FinPocket - Professional Financial Calculators`;
                           (After inflation impact)
                         </p>
                       </div>
-                      <div className="space-y-1 p-3 sm:p-4 rounded-lg bg-warning-soft">
+                      <div className="space-y-1 p-3 sm:p-4 rounded-lg bg-muted/50">
                         <p className="text-xs sm:text-sm text-muted-foreground">Real Final Value</p>
                         <p className="text-lg sm:text-xl font-bold text-warning">
                           {formatCurrency(result.realFinalValue || 0, currency)}
@@ -399,9 +399,9 @@ Calculated using FinPocket - Professional Financial Calculators`;
                       <Line 
                         type="monotone" 
                         dataKey="value" 
-                        stroke="#10b981" 
+                        stroke="#18181b" 
                         strokeWidth={3}
-                        dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
+                        dot={{ fill: '#18181b', strokeWidth: 2, r: 4 }}
                         name="value"
                         isAnimationActive={false}
                       />
@@ -409,10 +409,10 @@ Calculated using FinPocket - Professional Financial Calculators`;
                         <Line 
                           type="monotone" 
                           dataKey="realValue" 
-                          stroke="#f59e0b" 
+                          stroke="#71717a" 
                           strokeWidth={3}
                           strokeDasharray="5 5"
-                          dot={{ fill: '#f59e0b', strokeWidth: 2, r: 4 }}
+                          dot={{ fill: '#71717a', strokeWidth: 2, r: 4 }}
                           name="realValue"
                           isAnimationActive={false}
                         />
@@ -457,7 +457,7 @@ Calculated using FinPocket - Professional Financial Calculators`;
                       />
                       <Bar 
                         dataKey="annualReturns" 
-                        fill="#3b82f6" 
+                        fill="#52525b" 
                         radius={[4, 4, 0, 0]}
                         isAnimationActive={false}
                       />
