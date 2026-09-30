@@ -11,7 +11,8 @@ import { Separator } from '@/components/ui/separator';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { calculateIncomeTax, formatCurrency, TAX_COUNTRIES, TaxCountry } from '@/utils/taxCalculations';
 import { TaxCalculation } from '@/types/calculator';
-import { RotateCcw, Calculator, Info, FileText, Globe, RefreshCw } from 'lucide-react';
+import { RotateCcw, Calculator, FileText, Globe, RefreshCw } from 'lucide-react';
+import { InfoTooltip } from '@/components/info-tooltip';
 import { ShareDropdown } from '@/components/share-dropdown';
 import { toast } from 'sonner';
 
@@ -47,19 +48,16 @@ export default function TaxCalculator() {
     }));
   };
 
-  const calculateTax = async () => {
-    setIsCalculating(true);
+  const calculateTax = (showSuccessToast = false) => {
     try {
-      // Add a small delay to show loading state for better UX
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
       const calculation = calculateIncomeTax(selectedCountry, grossIncome, deductions);
       setResult(calculation);
-      toast.success('Tax calculated successfully!');
+      // Only toast on explicit user action — never on auto-calc while typing
+      if (showSuccessToast) {
+        toast.success('Tax calculated successfully!');
+      }
     } catch (error) {
       toast.error('Failed to calculate tax. Please check your inputs.');
-    } finally {
-      setIsCalculating(false);
     }
   };
 
@@ -105,13 +103,10 @@ ${slabsText}
 Calculated using FinPocket - Professional Financial Calculators`;
   };
 
-  // Auto-calculate when values change
+  // Auto-calculate when values change (pure computation — no toast while typing)
   useEffect(() => {
     if (grossIncome > 0) {
-      const timeoutId = setTimeout(() => {
-        calculateTax();
-      }, 500);
-      return () => clearTimeout(timeoutId);
+      calculateTax(false);
     }
   }, [grossIncome, deductions, selectedCountry]);
 
@@ -188,12 +183,7 @@ Calculated using FinPocket - Professional Financial Calculators`;
                   <Label className="text-base sm:text-lg font-semibold">
                     Deductions & Exemptions
                   </Label>
-                  <div className="group relative">
-                    <Info className="w-5 h-5 text-muted-foreground cursor-help" />
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-popover text-popover-foreground text-xs rounded-md shadow-md border opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none w-64 z-10">
-                      Enter the amounts you're eligible to claim as deductions
-                    </div>
-                  </div>
+                  <InfoTooltip text="Enter the amounts you're eligible to claim as deductions" />
                 </div>
 
                 <div className="grid grid-cols-1 gap-4">
@@ -234,7 +224,7 @@ Calculated using FinPocket - Professional Financial Calculators`;
             {/* Action Buttons */}
             <div className="flex gap-4 pt-6">
               <Button 
-                onClick={calculateTax} 
+                onClick={() => calculateTax(true)} 
                 size="lg"
                 className="flex items-center gap-2 flex-1 h-12 sm:h-14 text-base rounded-xl"
                 disabled={isCalculating}
@@ -262,7 +252,7 @@ Calculated using FinPocket - Professional Financial Calculators`;
 
         {/* Results */}
         {result && (
-          <div className="space-y-6 sm:space-y-8" id="tax-results">
+          <div className="space-y-6 sm:space-y-8" id="tax-results" role="status" aria-live="polite">
             <Card className="shadow-enhanced rounded-2xl">
               <CardHeader className="pb-6 sm:pb-8">
                 <div className="flex items-center justify-between">
@@ -282,27 +272,27 @@ Calculated using FinPocket - Professional Financial Calculators`;
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-center">
-                  <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-blue-50 dark:bg-blue-950/20">
+                  <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-info-soft">
                     <p className="text-sm sm:text-base text-muted-foreground">Gross Income</p>
-                    <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600 dark:text-blue-400">
+                    <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary">
                       {formatCurrency(result.grossIncome, selectedCountry.currency)}
                     </p>
                   </div>
-                  <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-green-50 dark:bg-green-950/20">
+                  <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-success-soft">
                     <p className="text-sm sm:text-base text-muted-foreground">Total Deductions</p>
-                    <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600 dark:text-green-400">
+                    <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-success">
                       {formatCurrency(result.totalDeductions, selectedCountry.currency)}
                     </p>
                   </div>
-                  <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-orange-50 dark:bg-orange-950/20">
+                  <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-warning-soft">
                     <p className="text-sm sm:text-base text-muted-foreground">Taxable Income</p>
-                    <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-orange-600 dark:text-orange-400">
+                    <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-warning">
                       {formatCurrency(result.taxableIncome, selectedCountry.currency)}
                     </p>
                   </div>
-                  <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-red-50 dark:bg-red-950/20">
+                  <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-danger-soft">
                     <p className="text-sm sm:text-base text-muted-foreground">Total Tax</p>
-                    <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-red-600 dark:text-red-400">
+                    <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-destructive">
                       {formatCurrency(result.totalTax, selectedCountry.currency)}
                     </p>
                   </div>
@@ -431,7 +421,7 @@ Calculated using FinPocket - Professional Financial Calculators`;
                           return (
                             <div key={key} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                               <span className="font-medium">{deduction?.name || key}</span>
-                              <span className="font-bold text-green-600 dark:text-green-400">
+                              <span className="font-bold text-success">
                                 {formatCurrency(value, selectedCountry.currency)}
                               </span>
                             </div>
@@ -457,7 +447,7 @@ Calculated using FinPocket - Professional Financial Calculators`;
                             Taxable: {formatCurrency(slab.taxableAmount, selectedCountry.currency)}
                           </div>
                         </div>
-                        <span className="font-bold text-red-600 dark:text-red-400">
+                        <span className="font-bold text-destructive">
                           {formatCurrency(slab.taxOnSlab, selectedCountry.currency)}
                         </span>
                       </div>

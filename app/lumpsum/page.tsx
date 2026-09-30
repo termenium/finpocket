@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { CalculatorLayout } from '@/components/calculator-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { ClampedNumberInput } from '@/components/clamped-number-input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
@@ -12,7 +12,8 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { calculateLumpSum, formatCurrency, getCurrencySymbol, formatCurrencyCompact } from '@/utils/calculations';
 import { useCurrency } from '@/components/currency-provider';
 import { LumpSumCalculation } from '@/types/calculator';
-import { RotateCcw, Info } from 'lucide-react';
+import { RotateCcw } from 'lucide-react';
+import { InfoTooltip } from '@/components/info-tooltip';
 import { ShareDropdown } from '@/components/share-dropdown';
 
 // Default values
@@ -57,7 +58,7 @@ export default function LumpSumCalculator() {
 • Maturity Value: ${formatCurrency(result.maturityValue, currency)}
 • Growth: ${((result.maturityValue / result.principal - 1) * 100).toFixed(1)}%
 
-Calculated using FinToolkit - Professional Financial Calculators`;
+Calculated using FinPocket - Professional Financial Calculators`;
   };
 
   // Auto-calculate when values change
@@ -89,23 +90,7 @@ Calculated using FinToolkit - Professional Financial Calculators`;
     setInflationRate(value[0]);
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    const numValue = parseFloat(value) || 0;
-    switch (field) {
-      case 'principal':
-        setPrincipal(Math.max(1000, Math.min(10000000, numValue)));
-        break;
-      case 'return':
-        setAnnualReturn(Math.max(1, Math.min(30, numValue)));
-        break;
-      case 'years':
-        setYears(Math.max(1, Math.min(50, numValue)));
-        break;
-      case 'inflation':
-        setInflationRate(Math.max(0, Math.min(15, numValue)));
-        break;
-    }
-  };
+
 
   return (
     <CalculatorLayout
@@ -148,14 +133,13 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                 <span>{formatCurrencyCompact(10000000, currency)}</span>
               </div>
               
-              <Input
+              <ClampedNumberInput
                 id="principal"
-                type="number"
                 value={principal}
-                onChange={(e) => handleInputChange('principal', e.target.value)}
+                onValueChange={setPrincipal}
                 placeholder="100000"
-                min="1000"
-                max="10000000"
+                min={1000}
+                max={10000000}
                 step="1000"
                 className="text-base sm:text-lg h-12 sm:h-14 rounded-xl"
               />
@@ -187,14 +171,13 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                 <span>30%</span>
               </div>
               
-              <Input
+              <ClampedNumberInput
                 id="return"
-                type="number"
                 value={annualReturn}
-                onChange={(e) => handleInputChange('return', e.target.value)}
+                onValueChange={setAnnualReturn}
                 placeholder="12"
-                min="1"
-                max="30"
+                min={1}
+                max={30}
                 step="0.5"
                 className="text-base sm:text-lg h-12 sm:h-14 rounded-xl"
               />
@@ -226,14 +209,14 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                 <span>50 Years</span>
               </div>
               
-              <Input
+              <ClampedNumberInput
                 id="years"
-                type="number"
                 value={years}
-                onChange={(e) => handleInputChange('years', e.target.value)}
+                onValueChange={setYears}
                 placeholder="10"
-                min="1"
-                max="50"
+                min={1}
+                max={50}
+                step="1"
                 className="text-base sm:text-lg h-12 sm:h-14 rounded-xl"
               />
             </div>
@@ -245,12 +228,7 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                   <Label htmlFor="inflation-toggle" className="text-base sm:text-lg font-semibold">
                     Adjust for Inflation
                   </Label>
-                  <div className="group relative">
-                    <Info className="w-5 h-5 text-muted-foreground cursor-help" />
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-popover text-popover-foreground text-xs rounded-md shadow-md border opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none w-64 z-10">
-                      Shows the real purchasing power of your returns after accounting for inflation
-                    </div>
-                  </div>
+                  <InfoTooltip text="Shows the real purchasing power of your returns after accounting for inflation" />
                 </div>
                 <Switch
                   id="inflation-toggle"
@@ -285,14 +263,13 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                     <span>15%</span>
                   </div>
                   
-                  <Input
+                  <ClampedNumberInput
                     id="inflation"
-                    type="number"
                     value={inflationRate}
-                    onChange={(e) => handleInputChange('inflation', e.target.value)}
+                    onValueChange={setInflationRate}
                     placeholder="6"
-                    min="0"
-                    max="15"
+                    min={0}
+                    max={15}
                     step="0.5"
                     className="text-base sm:text-lg h-12 sm:h-14 rounded-xl"
                   />
@@ -317,7 +294,7 @@ Calculated using FinToolkit - Professional Financial Calculators`;
 
         {/* Results */}
         {result && (
-          <div className="space-y-6 sm:space-y-8" id="lumpsum-results">
+          <div className="space-y-6 sm:space-y-8" id="lumpsum-results" role="status" aria-live="polite">
             <Card className="shadow-enhanced rounded-2xl">
               <CardHeader className="pb-6 sm:pb-8">
                 <div className="flex items-center justify-between">
@@ -333,13 +310,13 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-center">
                   <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-muted/50">
                     <p className="text-sm sm:text-base text-muted-foreground">Initial Investment</p>
-                    <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600 dark:text-blue-400">
+                    <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary">
                       {formatCurrency(result.principal, currency)}
                     </p>
                   </div>
                   <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-muted/50">
                     <p className="text-sm sm:text-base text-muted-foreground">Total Returns</p>
-                    <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600 dark:text-green-400">
+                    <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-success">
                       {formatCurrency(result.totalReturns, currency)}
                     </p>
                   </div>
@@ -358,15 +335,15 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                       Real Values (Inflation-Adjusted at {result.inflationRate}%)
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-center">
-                      <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-orange-50 dark:bg-orange-950/20">
+                      <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-warning-soft">
                         <p className="text-sm sm:text-base text-muted-foreground">Real Total Returns</p>
-                        <p className="text-xl sm:text-2xl font-bold text-orange-600 dark:text-orange-400">
+                        <p className="text-xl sm:text-2xl font-bold text-warning">
                           {formatCurrency(result.realTotalReturns || 0, currency)}
                         </p>
                       </div>
-                      <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-orange-50 dark:bg-orange-950/20">
+                      <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-warning-soft">
                         <p className="text-sm sm:text-base text-muted-foreground">Real Maturity Value</p>
-                        <p className="text-xl sm:text-2xl font-bold text-orange-600 dark:text-orange-400">
+                        <p className="text-xl sm:text-2xl font-bold text-warning">
                           {formatCurrency(result.realMaturityValue || 0, currency)}
                         </p>
                       </div>
@@ -420,6 +397,7 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                         fill="#10b981" 
                         fillOpacity={0.6}
                         name="value"
+                        isAnimationActive={false}
                       />
                       {showInflationAdjustment && (
                         <Area 
@@ -429,6 +407,7 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                           fill="#f59e0b" 
                           fillOpacity={0.4}
                           name="realValue"
+                          isAnimationActive={false}
                         />
                       )}
                     </AreaChart>

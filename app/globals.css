@@ -43,6 +43,10 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.75rem;
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 98%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 9%;
   }
   .dark {
     --background: 0 0% 3.9%;
@@ -69,6 +73,10 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+    --success: 142 69% 58%;
+    --success-foreground: 0 0% 9%;
+    --warning: 38 92% 55%;
+    --warning-foreground: 0 0% 9%;
   }
 }
 
@@ -102,22 +110,16 @@
   box-sizing: border-box;
 }
 
-/* Use GPU acceleration for animations */
-.transition-all,
-button,
-input,
-select,
-textarea {
-  will-change: transform;
-  transform: translateZ(0);
-}
+/* Note: intentionally no blanket will-change / translateZ(0) / transform hacks here.
+   Force-promoting every button/input/chart to its own GPU layer costs far more
+   memory and compositing time than it saves. Browsers already optimize transitions
+   of transform/opacity on their own. */
 
 /* Optimize chart rendering */
 .recharts-wrapper {
   background: hsl(var(--card));
   border-radius: 12px;
   padding: 8px;
-  contain: layout style paint;
 }
 
 .recharts-cartesian-grid line {
@@ -161,27 +163,8 @@ textarea {
   font-weight: 500 !important;
 }
 
-/* Enhanced line and bar styles with GPU acceleration */
-.recharts-line-curve {
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-  will-change: transform;
-}
-
-.recharts-bar-rectangle {
-  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.1));
-  will-change: transform;
-}
-
-.recharts-area-curve {
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-  will-change: transform;
-}
-
-/* Enhanced dot styles for line charts */
-.recharts-line-dot {
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
-  will-change: transform;
-}
+/* Chart lines/bars/dots: no per-element drop-shadow filters —
+   SVG filters are repainted on every chart update (slider drag = repaint storm) */
 
 /* Export mode styles for better image/PDF quality */
 .export-mode {
@@ -248,25 +231,21 @@ nav {
 /* Enhanced rounded corners for cards and components */
 .card {
   @apply rounded-2xl;
-  contain: layout style paint;
 }
 
-/* Smooth transitions for interactive elements with GPU acceleration */
+/* Smooth transitions for interactive elements */
 .transition-all {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
 /* Enhanced button styles with more rounded corners */
 button {
-  @apply rounded-xl transition-all;
-  contain: layout style paint;
+  @apply rounded-xl transition-colors;
 }
 
 /* Input field enhancements */
 input, select, textarea {
-  @apply rounded-xl transition-all;
-  contain: layout style paint;
+  @apply rounded-xl;
 }
 
 /* Enhanced shadow effects */
@@ -278,44 +257,18 @@ input, select, textarea {
   box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
 }
 
-/* Micro-interactions for interactive elements with optimized transforms */
+/* Subtle hover affordances (transform-only, cheap to composite) */
 button:hover {
-  transform: translateY(-1px) translateZ(0);
+  transform: translateY(-1px);
 }
 
-input:focus, select:focus, textarea:focus {
-  transform: scale(1.01) translateZ(0);
-}
-
-.slider-thumb:hover {
-  transform: scale(1.1) translateZ(0);
-}
-
-/* Enhanced spacing for better visual hierarchy */
-.space-y-enhanced > * + * {
-  margin-top: 2rem;
-}
-
-@media (min-width: 640px) {
-  .space-y-enhanced > * + * {
-    margin-top: 2.5rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .space-y-enhanced > * + * {
-    margin-top: 3rem;
-  }
-}
-
-/* Chart container enhancements with containment */
+/* Chart container enhancements */
 .chart-container {
   background: hsl(var(--card));
   border: 1px solid hsl(var(--border));
   border-radius: 16px;
   padding: 16px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  contain: layout style paint;
 }
 
 .dark .chart-container {
@@ -375,6 +328,20 @@ input:focus, select:focus, textarea:focus {
   }
 }
 
+/* Semantic color classes mapped to theme tokens (use these instead of raw palette colors) */
+.bg-success-soft {
+  background-color: hsl(var(--success) / 0.1);
+}
+.bg-warning-soft {
+  background-color: hsl(var(--warning) / 0.1);
+}
+.bg-info-soft {
+  background-color: hsl(var(--chart-1) / 0.1);
+}
+.bg-danger-soft {
+  background-color: hsl(var(--destructive) / 0.1);
+}
+
 /* Custom color palette for better contrast */
 :root {
   --chart-color-1: #3b82f6; /* Blue */
@@ -408,54 +375,18 @@ img, video {
 
 /* Optimize font loading */
 @font-face {
-  font-family: 'Inter';
-  font-display: swap;
+  font-family: 'Inter';  font-display: swap;
 }
 
-/* Critical rendering optimizations */
-.above-fold {
-  contain: layout style paint;
-}
-
-/* Lazy loading optimization */
-.lazy-load {
-  content-visibility: auto;
-  contain-intrinsic-size: 200px;
-}
-
-/* Mobile navbar enhancements */
-@media (max-width: 475px) {
-  .navbar-mobile-compact {
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
-  }
-  
-  .navbar-mobile-compact .navbar-logo {
-    font-size: 0.875rem;
-  }
-  
-  .navbar-mobile-compact .navbar-controls {
-    gap: 0.25rem;
-  }
-}
+/* Note: removed content-visibility lazy-load hack (caused layout shift: estimated
+   200px height vs real ~700px) and the blanket 44px min-width on all buttons
+   (broke compact icon buttons in the navbar). Touch-target sizing is handled
+   per-component where it matters. */
 
 /* Enhanced mobile sheet animations */
 @media (max-width: 768px) {
   [data-radix-dialog-content] {
     animation-duration: 0.3s;
     animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  }
-}
-
-/* Improved touch targets for mobile */
-@media (max-width: 768px) {
-  button {
-    min-height: 44px;
-    min-width: 44px;
-  }
-  
-  .touch-target {
-    min-height: 48px;
-    min-width: 48px;
   }
 }

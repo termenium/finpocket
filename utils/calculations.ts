@@ -1,8 +1,17 @@
 import { Currency } from '@/components/currency-provider';
 import { CashFlow, XIRRCalculation } from '@/types/calculator';
 
-// Memoization cache for expensive calculations
+// Memoization cache for expensive calculations (size-capped to prevent unbounded growth)
 const calculationCache = new Map<string, any>();
+const CALCULATION_CACHE_MAX_SIZE = 100;
+
+function cacheCalculation(key: string, value: any): any {
+  if (calculationCache.size >= CALCULATION_CACHE_MAX_SIZE) {
+    calculationCache.clear();
+  }
+  calculationCache.set(key, value);
+  return value;
+}
 
 function getCacheKey(type: string, params: any[]): string {
   return `${type}-${JSON.stringify(params)}`;
@@ -96,8 +105,7 @@ export function calculateSIP(
     monthlyData
   };
 
-  calculationCache.set(cacheKey, result);
-  return result;
+  return cacheCalculation(cacheKey, result);
 }
 
 export function calculateLumpSum(
@@ -158,8 +166,7 @@ export function calculateLumpSum(
     yearlyData
   };
 
-  calculationCache.set(cacheKey, result);
-  return result;
+  return cacheCalculation(cacheKey, result);
 }
 
 export function calculateEMI(
@@ -178,9 +185,12 @@ export function calculateEMI(
   const totalMonths = tenure * 12;
   
   // EMI formula: P * r * (1 + r)^n / ((1 + r)^n - 1)
-  const emi = loanAmount * monthlyRate * 
-    Math.pow(1 + monthlyRate, totalMonths) / 
-    (Math.pow(1 + monthlyRate, totalMonths) - 1);
+  // At 0% interest the loan is simply repaid in equal installments (avoids division by zero)
+  const emi = monthlyRate === 0
+    ? loanAmount / totalMonths
+    : loanAmount * monthlyRate * 
+      Math.pow(1 + monthlyRate, totalMonths) / 
+      (Math.pow(1 + monthlyRate, totalMonths) - 1);
   
   const totalPayable = emi * totalMonths;
   const totalInterest = totalPayable - loanAmount;
@@ -197,12 +207,11 @@ export function calculateEMI(
     realTotalPayable = totalPayable / Math.pow(1 + inflationRate / 100, tenure);
   }
   
-  // Generate amortization schedule (limit to first 5 years for performance)
+  // Generate full amortization schedule (the UI decides how much to display)
   const breakdown = [];
   let balance = loanAmount;
-  const maxMonths = Math.min(totalMonths, 60); // Show first 5 years
-  
-  for (let month = 1; month <= maxMonths; month++) {
+
+  for (let month = 1; month <= totalMonths; month++) {
     const interestComponent = balance * monthlyRate;
     const principalComponent = emi - interestComponent;
     balance -= principalComponent;
@@ -239,8 +248,7 @@ export function calculateEMI(
     breakdown
   };
 
-  calculationCache.set(cacheKey, result);
-  return result;
+  return cacheCalculation(cacheKey, result);
 }
 
 export function calculateCAGR(
@@ -309,8 +317,7 @@ export function calculateCAGR(
     yearlyProjection
   };
 
-  calculationCache.set(cacheKey, result);
-  return result;
+  return cacheCalculation(cacheKey, result);
 }
 
 // Helper function to calculate Net Present Value (NPV)
@@ -337,6 +344,40 @@ function calculateNPVDerivative(cashFlows: CashFlow[], rate: number): number {
   }, 0);
 }
 
+// Robust fallback solver: bisection over a broad rate range where the NPV
+// function is monotonic. Guaranteed to converge if the NPV changes sign
+// within the bracket.
+function solveXIRRByBisection(cashFlows: CashFlow[]): number {
+  let low = -0.9999;
+  let high = 10; // up to 1000%
+
+  let npvLow = calculateNPV(cashFlows, low);
+  let npvHigh = calculateNPV(cashFlows, high);
+
+  if (npvLow * npvHigh > 0) {
+    throw new Error('Unable to calculate XIRR - no solution found in the valid rate range');
+  }
+
+  for (let i = 0; i < 200; i++) {
+    const mid = (low + high) / 2;
+    const npvMid = calculateNPV(cashFlows, mid);
+
+    if (Math.abs(npvMid) < 1e-8 || (high - low) / 2 < 1e-8) {
+      return mid;
+    }
+
+    if (npvLow * npvMid < 0) {
+      high = mid;
+      npvHigh = npvMid;
+    } else {
+      low = mid;
+      npvLow = npvMid;
+    }
+  }
+
+  return (low + high) / 2;
+}
+
 export function calculateXIRR(cashFlows: CashFlow[]): XIRRCalculation {
   const cacheKey = getCacheKey('xirr', [cashFlows]);
   
@@ -361,26 +402,35 @@ export function calculateXIRR(cashFlows: CashFlow[]): XIRRCalculation {
     throw new Error('XIRR requires both positive and negative cash flows');
   }
 
+  // Validate dates are valid
+  if (sortedCashFlows.some(cf => isNaN(new Date(cf.date).getTime()))) {
+    throw new Error('Invalid date in cash flows');
+  }
+
   // Newton-Raphson method to find XIRR
   let rate = 0.1; // Initial guess: 10%
   const maxIterations = 100;
   const tolerance = 1e-6;
+  let converged = false;
 
   for (let i = 0; i < maxIterations; i++) {
     const npv = calculateNPV(sortedCashFlows, rate);
     const npvDerivative = calculateNPVDerivative(sortedCashFlows, rate);
     
     if (Math.abs(npv) < tolerance) {
+      converged = true;
       break;
     }
     
     if (Math.abs(npvDerivative) < tolerance) {
-      throw new Error('Unable to calculate XIRR - derivative too small');
+      break; // Derivative too small - Newton-Raphson failed, try fallback
     }
     
     const newRate = rate - npv / npvDerivative;
     
     if (Math.abs(newRate - rate) < tolerance) {
+      rate = newRate;
+      converged = true;
       break;
     }
     
@@ -388,8 +438,13 @@ export function calculateXIRR(cashFlows: CashFlow[]): XIRRCalculation {
     
     // Prevent extreme values
     if (rate < -0.99 || rate > 10) {
-      throw new Error('XIRR calculation did not converge to a reasonable value');
+      break; // Out of valid range - try fallback
     }
+  }
+
+  // Fall back to bisection when Newton-Raphson fails or does not converge
+  if (!converged) {
+    rate = solveXIRRByBisection(sortedCashFlows);
   }
 
   const xirr = rate * 100; // Convert to percentage
@@ -450,12 +505,20 @@ export function calculateXIRR(cashFlows: CashFlow[]): XIRRCalculation {
     cumulativeData
   };
 
-  calculationCache.set(cacheKey, result);
-  return result;
+  return cacheCalculation(cacheKey, result);
 }
 
-// Optimized currency formatting with memoization
+// Optimized currency formatting with memoization (size-capped to prevent unbounded growth)
 const formatCache = new Map<string, string>();
+const FORMAT_CACHE_MAX_SIZE = 500;
+
+function cacheFormat(key: string, value: string): string {
+  if (formatCache.size >= FORMAT_CACHE_MAX_SIZE) {
+    formatCache.clear();
+  }
+  formatCache.set(key, value);
+  return value;
+}
 
 export function formatCurrency(amount: number, currency: Currency): string {
   const cacheKey = `${amount}-${currency.code}`;
@@ -477,8 +540,7 @@ export function formatCurrency(amount: number, currency: Currency): string {
     result = `${currency.symbol}${formatNumber(amount)}`;
   }
 
-  formatCache.set(cacheKey, result);
-  return result;
+  return cacheFormat(cacheKey, result);
 }
 
 export function getCurrencySymbol(currency: Currency): string {
@@ -498,31 +560,32 @@ export function formatCurrencyCompact(amount: number, currency: Currency): strin
 
   let result: string;
   try {
-    if (amount >= 10000000) { // 1 crore
-      result = `${currency.symbol}${(amount / 10000000).toFixed(1)}Cr`;
-    } else if (amount >= 100000) { // 1 lakh
-      result = `${currency.symbol}${(amount / 100000).toFixed(1)}L`;
-    } else if (amount >= 1000) { // 1 thousand
-      result = `${currency.symbol}${(amount / 1000).toFixed(1)}K`;
+    if (currency.code === 'INR') {
+      // Indian numbering system: crore / lakh
+      if (amount >= 10000000) { // 1 crore
+        result = `${currency.symbol}${(amount / 10000000).toFixed(1)}Cr`;
+      } else if (amount >= 100000) { // 1 lakh
+        result = `${currency.symbol}${(amount / 100000).toFixed(1)}L`;
+      } else if (amount >= 1000) { // 1 thousand
+        result = `${currency.symbol}${(amount / 1000).toFixed(1)}K`;
+      } else {
+        result = `${currency.symbol}${amount.toFixed(0)}`;
+      }
     } else {
-      result = `${currency.symbol}${amount.toFixed(0)}`;
+      // International numbering system: billion / million / thousand
+      if (amount >= 1000000000) {
+        result = `${currency.symbol}${(amount / 1000000000).toFixed(1)}B`;
+      } else if (amount >= 1000000) {
+        result = `${currency.symbol}${(amount / 1000000).toFixed(1)}M`;
+      } else if (amount >= 1000) {
+        result = `${currency.symbol}${(amount / 1000).toFixed(1)}K`;
+      } else {
+        result = `${currency.symbol}${amount.toFixed(0)}`;
+      }
     }
   } catch (error) {
     result = `${currency.symbol}${formatNumber(amount)}`;
   }
 
-  formatCache.set(cacheKey, result);
-  return result;
-}
-
-// Clear cache periodically to prevent memory leaks
-if (typeof window !== 'undefined') {
-  setInterval(() => {
-    if (calculationCache.size > 100) {
-      calculationCache.clear();
-    }
-    if (formatCache.size > 200) {
-      formatCache.clear();
-    }
-  }, 300000); // Clear every 5 minutes
+  return cacheFormat(cacheKey, result);
 }

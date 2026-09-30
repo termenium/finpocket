@@ -8,10 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { convertCurrency, getExchangeRates, generateHistoricalRates, formatExchangeRate, ConversionResult, HistoricalRate } from '@/utils/currencyApi';
+import { convertCurrency, getExchangeRates, getHistoricalRates, formatExchangeRate, ConversionResult, HistoricalRate } from '@/utils/currencyApi';
 import { SUPPORTED_CURRENCIES, useCurrency } from '@/components/currency-provider';
 import { RotateCcw, ArrowRightLeft, TrendingUp, Clock, RefreshCw, AlertCircle } from 'lucide-react';
 import { ShareDropdown } from '@/components/share-dropdown';
+import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 
 // Popular currency pairs for quick access
@@ -31,11 +32,12 @@ export default function CurrencyConverter() {
   const [toCurrency, setToCurrency] = useState<string>('USD');
   const [result, setResult] = useState<ConversionResult | null>(null);
   const [historicalRates, setHistoricalRates] = useState<HistoricalRate[]>([]);
+  const [historicalError, setHistoricalError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>('');
 
-  const handleConvert = async () => {
+  const handleConvert = async (showSuccessToast = false) => {
     if (amount <= 0) {
       toast.error('Please enter a valid amount');
       return;
@@ -49,11 +51,22 @@ export default function CurrencyConverter() {
       setResult(conversionResult);
       setLastUpdated(new Date().toLocaleString());
 
-      // Generate historical data for chart
-      const historical = generateHistoricalRates(fromCurrency, toCurrency, conversionResult.rate);
-      setHistoricalRates(historical);
+      // Fetch real historical data for the chart (non-blocking failure:
+      // conversion is still shown if history is unavailable)
+      try {
+        const historical = await getHistoricalRates(fromCurrency, toCurrency);
+        setHistoricalRates(historical);
+        setHistoricalError(null);
+      } catch (historyErr) {
+        console.error('Failed to fetch historical rates:', historyErr);
+        setHistoricalRates([]);
+        setHistoricalError('Historical rate data is unavailable for this currency pair.');
+      }
 
-      toast.success('Currency converted successfully!');
+      // Only toast on explicit user action — never on auto-convert while typing
+      if (showSuccessToast) {
+        toast.success('Currency converted successfully!');
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to convert currency';
       setError(errorMessage);
@@ -76,9 +89,10 @@ export default function CurrencyConverter() {
   const handleReset = () => {
     setAmount(1000);
     setFromCurrency(currency.code);
-    setToCurrency('USD');
+    setToCurrency(currency.code === 'USD' ? 'EUR' : 'USD');
     setResult(null);
     setHistoricalRates([]);
+    setHistoricalError(null);
     setError(null);
     setLastUpdated('');
   };
@@ -93,23 +107,25 @@ export default function CurrencyConverter() {
 📊 Exchange Rate: 1 ${result.from} = ${formatExchangeRate(result.rate)} ${result.to}
 🕒 Last Updated: ${lastUpdated}
 
-Calculated using FinToolkit - Professional Financial Calculators`;
+Calculated using FinPocket - Professional Financial Calculators`;
   };
 
-  // Auto-convert when values change
+  // Auto-convert when values change (debounced to stay within API rate limits)
   useEffect(() => {
     if (amount > 0 && fromCurrency && toCurrency) {
-      const timeoutId = setTimeout(() => {
-        handleConvert();
-      }, 500); // Debounce API calls
+      const timeoutId =      setTimeout(() => {
+        handleConvert(false);
+      }, 300); // Debounce API calls
 
       return () => clearTimeout(timeoutId);
     }
   }, [amount, fromCurrency, toCurrency]);
 
-  // Set initial currencies based on user's preference
+  // Set initial currencies based on user's preference; pick a sensible
+  // "to" currency that differs from the user's own
   useEffect(() => {
     setFromCurrency(currency.code);
+    setToCurrency(prev => (prev === currency.code ? (currency.code === 'USD' ? 'EUR' : 'USD') : prev));
   }, [currency.code]);
 
   return (
@@ -225,7 +241,7 @@ Calculated using FinToolkit - Professional Financial Calculators`;
             {/* Action Buttons */}
             <div className="flex gap-4 pt-6">
               <Button 
-                onClick={handleConvert} 
+                onClick={() => handleConvert(true)} 
                 size="lg"
                 className="flex items-center gap-2 flex-1 h-12 sm:h-14 text-base rounded-xl"
                 disabled={isLoading}
@@ -265,7 +281,7 @@ Calculated using FinToolkit - Professional Financial Calculators`;
           )}
 
           {result && (
-            <div id="currency-results">
+            <div id="currency-results" role="status" aria-live="polite">
               <Card className="shadow-enhanced rounded-2xl">
                 <CardHeader className="pb-6 sm:pb-8">
                   <div className="flex items-center justify-between">
@@ -323,6 +339,29 @@ Calculated using FinToolkit - Professional Financial Calculators`;
               </Card>
 
               {/* Historical Chart */}
+              {isLoading && historicalRates.length === 0 && (
+                <Card className="shadow-enhanced rounded-2xl">
+                  <CardHeader className="pb-6 sm:pb-8">
+                    <Skeleton className="h-7 w-52 mb-2" />
+                    <Skeleton className="h-5 w-72" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-80 sm:h-96 w-full rounded-xl" />
+                  </CardContent>
+                </Card>
+              )}
+
+              {historicalError && (
+                <Card className="border-muted shadow-enhanced rounded-2xl">
+                  <CardContent className="pt-6">
+                    <div className="flex items-start gap-3 text-muted-foreground">
+                      <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
+                      <p className="text-sm">{historicalError}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {historicalRates.length > 0 && (
                 <Card className="shadow-enhanced rounded-2xl">
                   <CardHeader className="pb-6 sm:pb-8">
@@ -365,8 +404,9 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                             dataKey="rate" 
                             stroke="#10b981" 
                             strokeWidth={3}
-                            dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
+                            dot={false}
                             name={`${result.from}/${result.to} Rate`}
+                            isAnimationActive={false}
                           />
                         </LineChart>
                       </ResponsiveContainer>
