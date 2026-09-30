@@ -4,7 +4,7 @@ import { Calculator, Home } from 'lucide-react';
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center px-4">
+    <div className="min-h-screen flex items-center justify-center px-4">
       <div className="text-center max-w-md">
         <div className="flex items-center justify-center gap-3 mb-6">
           <Calculator className="w-10 h-10 text-primary" />
