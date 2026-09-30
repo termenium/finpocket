@@ -7,6 +7,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { CurrencySelector } from '@/components/currency-selector';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -41,38 +42,48 @@ export function Navbar() {
               </Link>
             </div>
             
-            {/* Desktop Navigation - Hidden on mobile/tablet */}
+            {/* Desktop Navigation - labels always visible; tooltip + full touch size */}
             <div className="hidden xl:flex items-center justify-center flex-1 px-8">
-              <div className="flex items-center space-x-1">
-                {navigation.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = pathname === item.href;
-                  
-                  return (
-                    <Link key={item.name} href={item.href}>
-                      <Button
-                        variant={isActive ? 'secondary' : 'ghost'}
-                        size="sm"
-                        className={cn(
-                          'flex items-center space-x-2 rounded-lg text-sm font-medium transition-all duration-200',
-                          isActive && 'bg-secondary shadow-sm'
-                        )}
-                      >
-                        <Icon className="h-4 w-4" />
-                        <span className="hidden 2xl:inline">{item.name}</span>
-                      </Button>
-                    </Link>
-                  );
-                })}
-              </div>
+              <TooltipProvider delayDuration={300}>
+                <div className="flex items-center space-x-0.5">
+                  {navigation.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = pathname === item.href;
+                    
+                    return (
+                      <Tooltip key={item.name}>
+                        <TooltipTrigger asChild>
+                          <Link href={item.href} className="min-w-[44px] min-h-[44px] flex items-center justify-center">
+                            <Button
+                              variant={isActive ? 'secondary' : 'ghost'}
+                              size="sm"
+                              aria-current={isActive ? 'page' : undefined}
+                              className={cn(
+                                'flex items-center justify-center gap-1.5 rounded-lg text-xs font-medium transition-all duration-200 px-2 min-h-[44px]',
+                                isActive && 'bg-secondary shadow-sm'
+                              )}
+                            >
+                              <Icon className="h-4 w-4 shrink-0" />
+                              <span className="hidden lg:inline xl:hidden 2xl:inline text-[11px] leading-none whitespace-nowrap">
+                                {item.name}
+                              </span>
+                            </Button>
+                          </Link>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">
+                          {item.name}
+                        </TooltipContent>
+                      </Tooltip>
+                    );
+                  })}
+                </div>
+              </TooltipProvider>
             </div>
 
             {/* Right Section - Controls */}
             <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
-              {/* Currency Selector - Hidden on small mobile */}
-              <div className="hidden xs:block">
-                <CurrencySelector />
-              </div>
+              {/* Currency Selector - always visible so it is discoverable on all screens */}
+              <CurrencySelector />
               
               {/* Theme Toggle */}
               <ThemeToggle />
@@ -104,14 +115,6 @@ export function Navbar() {
                     <div className="flex items-center space-x-3 px-2">
                       <Calculator className="h-6 w-6 text-primary" />
                       <span className="text-xl font-bold">FinPocket</span>
-                    </div>
-                    
-                    {/* Mobile Currency Selector - Show on small screens */}
-                    <div className="xs:hidden px-2">
-                      <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                        <span className="text-sm font-medium">Currency</span>
-                        <CurrencySelector />
-                      </div>
                     </div>
                     
                     {/* Navigation Links */}

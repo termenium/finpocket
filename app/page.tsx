@@ -51,12 +51,12 @@ export default function Home() {
 
   const features = [
     {
-      icon: <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />,
+      icon: <CheckCircle className="w-5 h-5 text-success" />,
       title: 'Accurate Calculations',
       description: 'Built with proven financial formulas and validated against industry standards.'
     },
     {
-      icon: <BarChart3 className="w-5 h-5 text-blue-600 dark:text-blue-400" />,
+      icon: <BarChart3 className="w-5 h-5 text-primary" />,
       title: 'Visual Insights',
       description: 'Interactive charts and graphs to help you visualize your financial growth.'
     },
@@ -70,7 +70,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       {/* Hero Section */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 text-center max-w-7xl above-fold">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 text-center max-w-7xl">
         <div className="mb-12 sm:mb-16 lg:mb-20">
           <div className="flex items-center justify-center gap-3 sm:gap-4 mb-6 sm:mb-8">
             <Calculator className="w-8 h-8 sm:w-10 sm:h-10 text-primary" />
@@ -83,7 +83,7 @@ export default function Home() {
           
           {/* Call to Action Button */}
           <div className="mb-10 sm:mb-12">
-            <Link href="/sip" prefetch={false}>
+            <Link href="/sip">
               <Button 
                 size="lg" 
                 className="text-lg sm:text-xl px-8 sm:px-10 py-4 sm:py-5 h-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-enhanced hover:shadow-xl transition-all duration-300 group rounded-2xl"
@@ -102,21 +102,35 @@ export default function Home() {
               ✓ Interactive charts
             </span>
             <span className="flex items-center gap-2">
-              ✓ Mobile responsive
+              ✓ 100% private — runs in your browser
             </span>
+          </div>
+
+          {/* Trust stats row */}
+          <div className="mt-10 sm:mt-12 grid grid-cols-3 max-w-2xl mx-auto divide-x divide-border rounded-2xl border bg-card/50">
+            {[
+              { value: '7', label: 'Calculators' },
+              { value: '5', label: 'Countries for tax' },
+              { value: '10', label: 'Currencies' },
+            ].map((stat) => (
+              <div key={stat.label} className="py-4 sm:py-5 px-2">
+                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary">{stat.value}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">{stat.label}</p>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Calculator Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-7 gap-6 sm:gap-8 lg:gap-10 mb-16 sm:mb-20 lazy-load">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 sm:gap-8 mb-16 sm:mb-20">
           {calculators.map((calculator, index) => (
             <CalculatorCard key={calculator.href} {...calculator} />
           ))}
         </div>
 
         {/* Features Section */}
-        <div className="bg-card rounded-2xl p-8 sm:p-10 shadow-enhanced border lazy-load">
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-6 sm:mb-8">Why Choose FinPocket?</h2>
+        <div className="bg-card rounded-2xl p-8 sm:p-10 shadow-enhanced border">
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-6 sm:mb-8">Why choose FinPocket?</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 text-left">
             {features.map((feature, index) => (
               <div key={feature.title} className="space-y-4">

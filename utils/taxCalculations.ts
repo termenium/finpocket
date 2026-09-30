@@ -50,48 +50,35 @@ export const TAX_COUNTRIES: TaxCountry[] = [
     name: 'India',
     flag: '🇮🇳',
     currency: { code: 'INR', name: 'Indian Rupee', symbol: '₹', locale: 'en-IN' },
-    taxYear: '2024-25',
+    taxYear: '2025-26',
     incomeDescription: 'Annual gross salary including basic pay, allowances, and perquisites',
     taxSlabs: [
-      { from: 0, to: 300000, rate: 0 },
-      { from: 300000, to: 700000, rate: 5 },
-      { from: 700000, to: 1000000, rate: 10 },
-      { from: 1000000, to: 1200000, rate: 15 },
-      { from: 1200000, to: 1500000, rate: 20 },
-      { from: 1500000, to: Infinity, rate: 30 }
+      { from: 0, to: 400000, rate: 0 },
+      { from: 400000, to: 800000, rate: 5 },
+      { from: 800000, to: 1200000, rate: 10 },
+      { from: 1200000, to: 1600000, rate: 15 },
+      { from: 1600000, to: 2000000, rate: 20 },
+      { from: 2000000, to: 2400000, rate: 25 },
+      { from: 2400000, to: Infinity, rate: 30 }
     ],
     deductions: [
       {
-        key: 'section80C',
-        name: 'Section 80C (PPF, ELSS, Life Insurance)',
-        description: 'Investments in PPF, ELSS, life insurance premiums, etc.',
-        maxLimit: 150000,
-        defaultValue: 150000
-      },
-      {
-        key: 'section80D',
-        name: 'Section 80D (Health Insurance)',
-        description: 'Health insurance premiums for self and family',
-        maxLimit: 75000,
-        defaultValue: 25000
-      },
-      {
-        key: 'hra',
-        name: 'HRA (House Rent Allowance)',
-        description: 'House rent allowance exemption',
-        defaultValue: 100000
-      },
-      {
         key: 'standardDeduction',
         name: 'Standard Deduction',
-        description: 'Standard deduction for salaried individuals',
-        maxLimit: 50000,
-        defaultValue: 50000
+        description: 'Standard deduction for salaried individuals (new regime)',
+        maxLimit: 75000,
+        defaultValue: 75000
       },
       {
-        key: 'section80E',
-        name: 'Section 80E (Education Loan Interest)',
-        description: 'Interest paid on education loan',
+        key: 'employerNPS',
+        name: 'Employer NPS Contribution (Sec 80CCD(2))',
+        description: 'Employer contribution to NPS (14% of salary under new regime)',
+        defaultValue: 0
+      },
+      {
+        key: 'section80JJAA',
+        name: 'New Employment Incentive (Sec 80JJAA)',
+        description: 'Deduction for hiring new employees (30% of wages, 3 years)',
         defaultValue: 0
       }
     ]
@@ -101,30 +88,30 @@ export const TAX_COUNTRIES: TaxCountry[] = [
     name: 'United States',
     flag: '🇺🇸',
     currency: { code: 'USD', name: 'US Dollar', symbol: '$', locale: 'en-US' },
-    taxYear: '2024',
+    taxYear: '2025',
     incomeDescription: 'Annual gross income including wages, salary, tips, and other compensation',
     taxSlabs: [
-      { from: 0, to: 11000, rate: 10 },
-      { from: 11000, to: 44725, rate: 12 },
-      { from: 44725, to: 95375, rate: 22 },
-      { from: 95375, to: 182050, rate: 24 },
-      { from: 182050, to: 231250, rate: 32 },
-      { from: 231250, to: 578125, rate: 35 },
-      { from: 578125, to: Infinity, rate: 37 }
+      { from: 0, to: 11925, rate: 10 },
+      { from: 11925, to: 48475, rate: 12 },
+      { from: 48475, to: 103350, rate: 22 },
+      { from: 103350, to: 197300, rate: 24 },
+      { from: 197300, to: 250525, rate: 32 },
+      { from: 250525, to: 626350, rate: 35 },
+      { from: 626350, to: Infinity, rate: 37 }
     ],
     deductions: [
       {
         key: 'standardDeduction',
         name: 'Standard Deduction (Single)',
         description: 'Standard deduction for single filers',
-        maxLimit: 13850,
-        defaultValue: 13850
+        maxLimit: 15000,
+        defaultValue: 15000
       },
       {
         key: 'retirement401k',
         name: '401(k) Contributions',
         description: 'Pre-tax contributions to 401(k) retirement plan',
-        maxLimit: 22500,
+        maxLimit: 23500,
         defaultValue: 10000
       },
       {
@@ -147,7 +134,7 @@ export const TAX_COUNTRIES: TaxCountry[] = [
     name: 'United Kingdom',
     flag: '🇬🇧',
     currency: { code: 'GBP', name: 'British Pound', symbol: '£', locale: 'en-GB' },
-    taxYear: '2024-25',
+    taxYear: '2025-26',
     incomeDescription: 'Annual gross income including salary, wages, and taxable benefits',
     taxSlabs: [
       { from: 0, to: 12570, rate: 0 },
@@ -159,7 +146,7 @@ export const TAX_COUNTRIES: TaxCountry[] = [
       {
         key: 'personalAllowance',
         name: 'Personal Allowance',
-        description: 'Tax-free personal allowance',
+        description: 'Tax-free personal allowance (frozen at £12,570)',
         maxLimit: 12570,
         defaultValue: 12570
       },
@@ -182,22 +169,22 @@ export const TAX_COUNTRIES: TaxCountry[] = [
     name: 'Canada',
     flag: '🇨🇦',
     currency: { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$', locale: 'en-CA' },
-    taxYear: '2024',
+    taxYear: '2025',
     incomeDescription: 'Annual gross income including employment income and taxable benefits',
     taxSlabs: [
-      { from: 0, to: 53359, rate: 15 },
-      { from: 53359, to: 106717, rate: 20.5 },
-      { from: 106717, to: 165430, rate: 26 },
-      { from: 165430, to: 235675, rate: 29 },
-      { from: 235675, to: Infinity, rate: 33 }
+      { from: 0, to: 57375, rate: 15 },
+      { from: 57375, to: 114750, rate: 20.5 },
+      { from: 114750, to: 177882, rate: 26 },
+      { from: 177882, to: 253414, rate: 29 },
+      { from: 253414, to: Infinity, rate: 33 }
     ],
     deductions: [
       {
         key: 'basicPersonalAmount',
         name: 'Basic Personal Amount',
-        description: 'Basic personal tax credit amount',
-        maxLimit: 15000,
-        defaultValue: 15000
+        description: 'Basic personal tax credit amount (2025 federal)',
+        maxLimit: 16129,
+        defaultValue: 16129
       },
       {
         key: 'rrspContributions',
@@ -218,14 +205,14 @@ export const TAX_COUNTRIES: TaxCountry[] = [
     name: 'Australia',
     flag: '🇦🇺',
     currency: { code: 'AUD', name: 'Australian Dollar', symbol: 'A$', locale: 'en-AU' },
-    taxYear: '2024-25',
+    taxYear: '2025-26',
     incomeDescription: 'Annual gross income including salary, wages, and fringe benefits',
     taxSlabs: [
       { from: 0, to: 18200, rate: 0 },
-      { from: 18200, to: 45000, rate: 19 },
-      { from: 45000, to: 120000, rate: 32.5 },
-      { from: 120000, to: 180000, rate: 37 },
-      { from: 180000, to: Infinity, rate: 45 }
+      { from: 18200, to: 45000, rate: 16 },
+      { from: 45000, to: 135000, rate: 30 },
+      { from: 135000, to: 190000, rate: 37 },
+      { from: 190000, to: Infinity, rate: 45 }
     ],
     deductions: [
       {
@@ -239,7 +226,7 @@ export const TAX_COUNTRIES: TaxCountry[] = [
         key: 'superContributions',
         name: 'Superannuation Contributions',
         description: 'Concessional superannuation contributions',
-        maxLimit: 27500,
+        maxLimit: 30000,
         defaultValue: 10000
       },
       {

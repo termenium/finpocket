@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CalculatorLayout } from '@/components/calculator-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,27 +12,44 @@ import { useCurrency } from '@/components/currency-provider';
 import { CashFlow, XIRRCalculation } from '@/types/calculator';
 import { RotateCcw, Plus, Trash2, Calculator, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react';
 import { ShareDropdown } from '@/components/share-dropdown';
+import { SignedNumberInput } from '@/components/signed-number-input';
 import { toast } from 'sonner';
 
-export default function XIRRCalculator() {
-  const { currency } = useCurrency();
-  const [cashFlows, setCashFlows] = useState<CashFlow[]>([
+// Static default dates avoid hydration mismatches: the prerendered HTML and
+// the client render must be identical. Dates are relative to 'now' at runtime
+// (either server render time or client mount time), not build time.
+function getDefaultCashFlows(): CashFlow[] {
+  const now = new Date();
+  const inOneYear = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
+  return [
     {
       id: '1',
-      date: new Date().toISOString().split('T')[0],
+      date: now.toISOString().split('T')[0],
       amount: -100000,
       description: 'Initial Investment'
     },
     {
       id: '2',
-      date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      date: inOneYear.toISOString().split('T')[0],
       amount: 120000,
       description: 'Final Return'
     }
-  ]);
+  ];
+}
+
+export default function XIRRCalculator() {
+  const { currency } = useCurrency();
+  const [cashFlows, setCashFlows] = useState<CashFlow[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
   const [result, setResult] = useState<XIRRCalculation | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
+
+  // Initialize date-dependent default state after mount to keep SSR/CSR output identical
+  useEffect(() => {
+    setCashFlows(getDefaultCashFlows());
+    setIsMounted(true);
+  }, []);
 
   const addCashFlow = () => {
     const newCashFlow: CashFlow = {
@@ -58,14 +75,11 @@ export default function XIRRCalculator() {
     ));
   };
 
-  const calculateResult = async () => {
+  const calculateResult = async (showSuccessToast = false) => {
     setIsCalculating(true);
     setError(null);
     
     try {
-      // Add a small delay to show loading state for better UX
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
       // Validate cash flows
       const validCashFlows = cashFlows.filter(cf => cf.amount !== 0 && cf.date);
       
@@ -75,7 +89,10 @@ export default function XIRRCalculator() {
 
       const calculation = calculateXIRR(validCashFlows);
       setResult(calculation);
-      toast.success('XIRR calculated successfully!');
+      // Only toast on explicit user action — never on auto-calc while typing
+      if (showSuccessToast) {
+        toast.success('XIRR calculated successfully!');
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to calculate XIRR';
       setError(errorMessage);
@@ -87,20 +104,7 @@ export default function XIRRCalculator() {
   };
 
   const handleReset = () => {
-    setCashFlows([
-      {
-        id: '1',
-        date: new Date().toISOString().split('T')[0],
-        amount: -100000,
-        description: 'Initial Investment'
-      },
-      {
-        id: '2',
-        date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        amount: 120000,
-        description: 'Final Return'
-      }
-    ]);
+    setCashFlows(getDefaultCashFlows());
     setResult(null);
     setError(null);
     setIsCalculating(false);
@@ -125,8 +129,21 @@ ${cashFlowsText}
 • Net Gain: ${formatCurrency(result.netGain, currency)} (${result.netGainPercent.toFixed(1)}%)
 • Investment Duration: ${result.duration.toFixed(1)} years
 
-Calculated using FinToolkit - Professional Financial Calculators`;
+Calculated using FinPocket - Professional Financial Calculators`;
   };
+
+  // Live calculation, debounced, consistent with the other calculators
+  useEffect(() => {
+    if (!isMounted) return;
+    const validCashFlows = cashFlows.filter(cf => cf.amount !== 0 && cf.date);
+    if (validCashFlows.length < 2) return;
+
+    const timeoutId = setTimeout(() => {
+      calculateResult(false);
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [cashFlows, isMounted]);
 
   return (
     <CalculatorLayout
@@ -194,14 +211,12 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                         <Label htmlFor={`amount-${cashFlow.id}`} className="text-sm">
                           Amount ({currency.symbol})
                         </Label>
-                        <Input
+                        <SignedNumberInput
                           id={`amount-${cashFlow.id}`}
-                          type="number"
                           value={cashFlow.amount}
-                          onChange={(e) => updateCashFlow(cashFlow.id, 'amount', parseFloat(e.target.value) || 0)}
-                          placeholder="Enter amount"
+                          onValueChange={(v) => updateCashFlow(cashFlow.id, 'amount', v)}
+                          placeholder="e.g. -100000 or 120000"
                           className="text-sm rounded-lg"
-                          disabled={isCalculating}
                         />
                       </div>
                     </div>
@@ -224,10 +239,10 @@ Calculated using FinToolkit - Professional Financial Calculators`;
             </div>
 
             {/* Helper Text */}
-            <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-xl">
+            <div className="p-4 bg-info-soft rounded-xl">
               <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
-                <div className="text-sm text-blue-800 dark:text-blue-200">
+                <AlertCircle className="w-5 h-5 text-primary mt-0.5" />
+                <div className="text-sm text-foreground">
                   <p className="font-medium mb-1">Tips for XIRR Calculation:</p>
                   <ul className="space-y-1 text-xs">
                     <li>• Use negative values for money going out (investments, purchases)</li>
@@ -242,7 +257,7 @@ Calculated using FinToolkit - Professional Financial Calculators`;
             {/* Action Buttons */}
             <div className="flex gap-4 pt-4">
               <Button 
-                onClick={calculateResult} 
+                onClick={() => calculateResult(true)} 
                 size="lg"
                 className="flex items-center gap-2 flex-1 h-12 sm:h-14 text-base rounded-xl"
                 disabled={isCalculating}
@@ -282,7 +297,7 @@ Calculated using FinToolkit - Professional Financial Calculators`;
           )}
 
           {result && (
-            <div id="xirr-results">
+            <div id="xirr-results" role="status" aria-live="polite">
               <Card className="shadow-enhanced rounded-2xl">
                 <CardHeader className="pb-6 sm:pb-8">
                   <div className="flex items-center justify-between">
@@ -298,28 +313,28 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-center">
                     <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20">
                       <div className="flex items-center justify-center gap-2 mb-2">
-                        <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
+                        <TrendingUp className="w-5 h-5 text-success" />
                         <p className="text-sm sm:text-base text-muted-foreground">XIRR (Annualized Return)</p>
                       </div>
-                      <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-green-600 dark:text-green-400">
+                      <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-success">
                         {result.xirr.toFixed(2)}%
                       </p>
                     </div>
                     <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-muted/50">
                       <p className="text-sm sm:text-base text-muted-foreground">Investment Duration</p>
-                      <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600 dark:text-blue-400">
+                      <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary">
                         {result.duration.toFixed(1)} Years
                       </p>
                     </div>
                     <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-muted/50">
                       <p className="text-sm sm:text-base text-muted-foreground">Total Invested</p>
-                      <p className="text-lg sm:text-xl font-bold text-red-600 dark:text-red-400">
+                      <p className="text-lg sm:text-xl font-bold text-destructive">
                         {formatCurrency(result.totalInvested, currency)}
                       </p>
                     </div>
                     <div className="space-y-2 p-4 sm:p-6 rounded-xl bg-muted/50">
                       <p className="text-sm sm:text-base text-muted-foreground">Total Returned</p>
-                      <p className="text-lg sm:text-xl font-bold text-green-600 dark:text-green-400">
+                      <p className="text-lg sm:text-xl font-bold text-success">
                         {formatCurrency(result.totalReturned, currency)}
                       </p>
                     </div>
@@ -350,9 +365,10 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                         <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                         <XAxis 
                           dataKey="date" 
-                          tickFormatter={(value) => new Date(value).toLocaleDateString()}
+                          tickFormatter={(value) => new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: '2-digit' })}
                           className="text-muted-foreground"
-                          fontSize={12}
+                          fontSize={11}
+                          minTickGap={28}
                         />
                         <YAxis 
                           tickFormatter={(value) => formatCurrency(value, currency)}
@@ -381,6 +397,7 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                           strokeWidth={3}
                           dot={{ fill: '#ef4444', strokeWidth: 2, r: 4 }}
                           name="cumulativeInvestment"
+                          isAnimationActive={false}
                         />
                         <Line 
                           type="monotone" 
@@ -389,6 +406,7 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                           strokeWidth={3}
                           dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
                           name="cumulativeReturns"
+                          isAnimationActive={false}
                         />
                         <Line 
                           type="monotone" 
@@ -398,6 +416,7 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                           strokeDasharray="5 5"
                           dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
                           name="netPosition"
+                          isAnimationActive={false}
                         />
                       </LineChart>
                     </ResponsiveContainer>
@@ -419,9 +438,10 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                         <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                         <XAxis 
                           dataKey="date" 
-                          tickFormatter={(value) => new Date(value).toLocaleDateString()}
+                          tickFormatter={(value) => new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: '2-digit' })}
                           className="text-muted-foreground"
-                          fontSize={12}
+                          fontSize={11}
+                          minTickGap={28}
                         />
                         <YAxis 
                           tickFormatter={(value) => formatCurrency(value, currency)}
@@ -438,7 +458,7 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                             fontSize: '12px'
                           }}
                         />
-                        <Bar dataKey="amount" radius={[4, 4, 0, 0]}>
+                        <Bar dataKey="amount" radius={[4, 4, 0, 0]} isAnimationActive={false}>
                           {result.cashFlows.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.amount >= 0 ? '#10b981' : '#ef4444'} />
                           ))}

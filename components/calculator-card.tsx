@@ -20,7 +20,7 @@ const CalculatorCard = memo(function CalculatorCard({ title, description, icon, 
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-0 pb-4 sm:pb-6">
-        <Link href={href} prefetch={false}>
+        <Link href={href}>
           <Button 
             className="w-full group-hover:bg-primary/90 transition-all duration-300 flex items-center justify-center gap-2 text-sm sm:text-base rounded-xl"
             size="lg"

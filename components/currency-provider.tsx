@@ -29,20 +29,39 @@ interface CurrencyContextType {
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
+// Derive the best default currency from the browser locale, so users start with
+// a sensible currency instead of always INR.
+function getDefaultCurrency(): Currency {
+  // Map browser region to a supported currency
+  const region = (typeof navigator !== 'undefined'
+    ? (navigator.language.split('-')[1] || navigator.language)
+    : '').toUpperCase();
+
+  const regionToCurrency: Record<string, string> = {
+    IN: 'INR', US: 'USD', GB: 'GBP', JP: 'JPY',
+    CA: 'CAD', AU: 'AUD', CH: 'CHF', CN: 'CNY', SG: 'SGD',
+  };
+
+  const code = regionToCurrency[region] || 'USD';
+  return SUPPORTED_CURRENCIES.find(c => c.code === code) || SUPPORTED_CURRENCIES[1];
+}
+
 export function CurrencyProvider({ children }: { children: React.ReactNode }) {
-  const [currency, setCurrencyState] = useState<Currency>(SUPPORTED_CURRENCIES[0]); // Default to INR
+  const [currency, setCurrencyState] = useState<Currency>(SUPPORTED_CURRENCIES[0]); // SSR default; replaced after mount
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    // Load saved currency from localStorage
+    // Load saved currency from localStorage, else fall back to browser locale
     const savedCurrency = localStorage.getItem('selected-currency');
     if (savedCurrency) {
       const found = SUPPORTED_CURRENCIES.find(c => c.code === savedCurrency);
       if (found) {
         setCurrencyState(found);
+        return;
       }
     }
+    setCurrencyState(getDefaultCurrency());
   }, []);
 
   const setCurrency = useMemo(() => (newCurrency: Currency) => {

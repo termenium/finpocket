@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import { CurrencyProvider } from '@/components/currency-provider';
 import { Navbar } from '@/components/navbar';
+import { Footer } from '@/components/footer';
 import { Toaster } from 'sonner';
 
 const inter = Inter({ 
@@ -32,6 +33,7 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  metadataBase: new URL('https://finpocket.vercel.app'),
   openGraph: {
     type: 'website',
     locale: 'en_US',
@@ -49,7 +51,7 @@ export const metadata: Metadata = {
   viewport: {
     width: 'device-width',
     initialScale: 1,
-    maximumScale: 1,
+    // maximumScale intentionally omitted: blocking pinch-zoom fails WCAG 1.4.4 (Resize Text)
   },
 };
 
@@ -61,7 +63,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="alternate icon" href="/favicon.ico" />
       </head>
       <body className={inter.className}>
         <ThemeProvider
@@ -71,8 +74,11 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <CurrencyProvider>
-            <Navbar />
-            {children}
+            <div className="flex min-h-screen flex-col">
+              <Navbar />
+              <div className="flex-1">{children}</div>
+              <Footer />
+            </div>
             <Toaster position="top-right" richColors />
           </CurrencyProvider>
         </ThemeProvider>

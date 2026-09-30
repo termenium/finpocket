@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { CalculatorLayout } from '@/components/calculator-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { ClampedNumberInput } from '@/components/clamped-number-input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
@@ -12,7 +12,8 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { calculateCAGR, formatCurrency, getCurrencySymbol, formatCurrencyCompact } from '@/utils/calculations';
 import { useCurrency } from '@/components/currency-provider';
 import { CAGRCalculation } from '@/types/calculator';
-import { RotateCcw, Info, TrendingUp } from 'lucide-react';
+import { RotateCcw, TrendingUp } from 'lucide-react';
+import { InfoTooltip } from '@/components/info-tooltip';
 import { ShareDropdown } from '@/components/share-dropdown';
 
 // Default values
@@ -57,7 +58,7 @@ export default function CAGRCalculator() {
 • Total Growth: ${result.totalGrowthPercent.toFixed(1)}%
 • Absolute Returns: ${formatCurrency(result.absoluteReturns, currency)}
 
-Calculated using FinToolkit - Professional Financial Calculators`;
+Calculated using FinPocket - Professional Financial Calculators`;
   };
 
   // Auto-calculate when values change
@@ -89,23 +90,7 @@ Calculated using FinToolkit - Professional Financial Calculators`;
     setInflationRate(value[0]);
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    const numValue = parseFloat(value) || 0;
-    switch (field) {
-      case 'initial':
-        setInitialValue(Math.max(1000, Math.min(100000000, numValue)));
-        break;
-      case 'final':
-        setFinalValue(Math.max(1000, Math.min(100000000, numValue)));
-        break;
-      case 'years':
-        setYears(Math.max(1, Math.min(50, numValue)));
-        break;
-      case 'inflation':
-        setInflationRate(Math.max(0, Math.min(15, numValue)));
-        break;
-    }
-  };
+
 
   return (
     <CalculatorLayout
@@ -148,14 +133,13 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                 <span>{formatCurrencyCompact(100000000, currency)}</span>
               </div>
               
-              <Input
+              <ClampedNumberInput
                 id="initial"
-                type="number"
                 value={initialValue}
-                onChange={(e) => handleInputChange('initial', e.target.value)}
+                onValueChange={setInitialValue}
                 placeholder="100000"
-                min="1000"
-                max="100000000"
+                min={1000}
+                max={100000000}
                 step="1000"
                 className="text-sm sm:text-base h-10 sm:h-11"
               />
@@ -187,14 +171,13 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                 <span>{formatCurrencyCompact(100000000, currency)}</span>
               </div>
               
-              <Input
+              <ClampedNumberInput
                 id="final"
-                type="number"
                 value={finalValue}
-                onChange={(e) => handleInputChange('final', e.target.value)}
+                onValueChange={setFinalValue}
                 placeholder="200000"
-                min="1000"
-                max="100000000"
+                min={1000}
+                max={100000000}
                 step="1000"
                 className="text-sm sm:text-base h-10 sm:h-11"
               />
@@ -226,14 +209,14 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                 <span>50 Years</span>
               </div>
               
-              <Input
+              <ClampedNumberInput
                 id="years"
-                type="number"
                 value={years}
-                onChange={(e) => handleInputChange('years', e.target.value)}
+                onValueChange={setYears}
                 placeholder="5"
-                min="1"
-                max="50"
+                min={1}
+                max={50}
+                step="1"
                 className="text-sm sm:text-base h-10 sm:h-11"
               />
             </div>
@@ -245,12 +228,7 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                   <Label htmlFor="inflation-toggle" className="text-sm sm:text-base font-medium">
                     Adjust for Inflation
                   </Label>
-                  <div className="group relative">
-                    <Info className="w-4 h-4 text-muted-foreground cursor-help" />
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-popover text-popover-foreground text-xs rounded-md shadow-md border opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none w-64 z-10">
-                      Shows the real CAGR after accounting for inflation impact
-                    </div>
-                  </div>
+                  <InfoTooltip text="Shows the real CAGR after accounting for inflation impact" />
                 </div>
                 <Switch
                   id="inflation-toggle"
@@ -285,14 +263,13 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                     <span>15%</span>
                   </div>
                   
-                  <Input
+                  <ClampedNumberInput
                     id="inflation"
-                    type="number"
                     value={inflationRate}
-                    onChange={(e) => handleInputChange('inflation', e.target.value)}
+                    onValueChange={setInflationRate}
                     placeholder="6"
-                    min="0"
-                    max="15"
+                    min={0}
+                    max={15}
                     step="0.5"
                     className="text-sm sm:text-base h-10 sm:h-11"
                   />
@@ -317,7 +294,7 @@ Calculated using FinToolkit - Professional Financial Calculators`;
 
         {/* Results */}
         {result && (
-          <div className="space-y-4 sm:space-y-6" id="cagr-results">
+          <div className="space-y-4 sm:space-y-6" id="cagr-results" role="status" aria-live="polite">
             <Card>
               <CardHeader className="pb-4 sm:pb-6">
                 <div className="flex items-center justify-between">
@@ -333,13 +310,13 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-center">
                   <div className="space-y-1 p-3 sm:p-4 rounded-lg bg-muted/50">
                     <p className="text-xs sm:text-sm text-muted-foreground">CAGR (Nominal)</p>
-                    <p className="text-lg sm:text-xl lg:text-2xl font-bold text-green-600 dark:text-green-400">
+                    <p className="text-lg sm:text-xl lg:text-2xl font-bold text-success">
                       {result.cagr.toFixed(2)}%
                     </p>
                   </div>
                   <div className="space-y-1 p-3 sm:p-4 rounded-lg bg-muted/50">
                     <p className="text-xs sm:text-sm text-muted-foreground">Total Growth</p>
-                    <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    <p className="text-lg sm:text-xl lg:text-2xl font-bold text-primary">
                       {result.totalGrowthPercent.toFixed(1)}%
                     </p>
                   </div>
@@ -358,18 +335,18 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                       Real Values (Inflation-Adjusted at {result.inflationRate}%)
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-center">
-                      <div className="space-y-1 p-3 sm:p-4 rounded-lg bg-orange-50 dark:bg-orange-950/20">
+                      <div className="space-y-1 p-3 sm:p-4 rounded-lg bg-warning-soft">
                         <p className="text-xs sm:text-sm text-muted-foreground">Real CAGR</p>
-                        <p className="text-lg sm:text-xl font-bold text-orange-600 dark:text-orange-400">
+                        <p className="text-lg sm:text-xl font-bold text-warning">
                           {result.realCAGR.toFixed(2)}%
                         </p>
                         <p className="text-xs text-muted-foreground">
                           (After inflation impact)
                         </p>
                       </div>
-                      <div className="space-y-1 p-3 sm:p-4 rounded-lg bg-orange-50 dark:bg-orange-950/20">
+                      <div className="space-y-1 p-3 sm:p-4 rounded-lg bg-warning-soft">
                         <p className="text-xs sm:text-sm text-muted-foreground">Real Final Value</p>
-                        <p className="text-lg sm:text-xl font-bold text-orange-600 dark:text-orange-400">
+                        <p className="text-lg sm:text-xl font-bold text-warning">
                           {formatCurrency(result.realFinalValue || 0, currency)}
                         </p>
                         <p className="text-xs text-muted-foreground">
@@ -426,6 +403,7 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                         strokeWidth={3}
                         dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
                         name="value"
+                        isAnimationActive={false}
                       />
                       {showInflationAdjustment && (
                         <Line 
@@ -436,6 +414,7 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                           strokeDasharray="5 5"
                           dot={{ fill: '#f59e0b', strokeWidth: 2, r: 4 }}
                           name="realValue"
+                          isAnimationActive={false}
                         />
                       )}
                     </LineChart>
@@ -480,6 +459,7 @@ Calculated using FinToolkit - Professional Financial Calculators`;
                         dataKey="annualReturns" 
                         fill="#3b82f6" 
                         radius={[4, 4, 0, 0]}
+                        isAnimationActive={false}
                       />
                     </BarChart>
                   </ResponsiveContainer>
