@@ -1,5 +1,5 @@
 import './globals.css';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import { CurrencyProvider } from '@/components/currency-provider';
@@ -48,11 +48,12 @@ export const metadata: Metadata = {
     description: 'Professional financial calculators for SIP, lump sum investments, EMI calculations, CAGR analysis, XIRR calculations, currency conversion, and income tax calculation.',
     creator: '@finpocket',
   },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    // maximumScale intentionally omitted: blocking pinch-zoom fails WCAG 1.4.4 (Resize Text)
-  },
+};
+
+// Next 14+: viewport config must be a separate export, not part of metadata
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({
