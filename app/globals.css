@@ -51,7 +51,8 @@
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
+    /* Cards lift off the near-black page (#0a0a0a → #171717) */
+    --card: 0 0% 9%;
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 3.9%;
     --popover-foreground: 0 0% 98%;
@@ -84,6 +85,12 @@
   * {
     @apply border-border;
   }
+  html {
+    /* Kill 300ms double-tap zoom delay; allow pinch-zoom to remain accessible */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
@@ -91,8 +98,12 @@
   }
   
   h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-geist), inherit;
+    letter-spacing: -0.02em;
     line-height: 1.2;
     font-weight: 600;
+    /* Anchor targets clear the sticky header */
+    scroll-margin-top: 6rem;
   }
   
   p {
@@ -102,6 +113,21 @@
   label {
     font-weight: 500;
     line-height: 1.5;
+  }
+  
+  /* Respect users who prefer reduced motion: disable decorative movement,
+     keep opacity-only transitions which are cheap and non-vestibular */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
@@ -325,6 +351,87 @@ button:hover {
   
   .recharts-legend-item-text {
     font-size: 11px !important;
+  }
+}
+
+/* ---------- Micro animations ---------- */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hero: CSS-only load-in, staggered via --d */
+.anim-rise {
+  opacity: 0;
+  animation: rise-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: var(--d, 0ms);
+}
+
+/* Scroll-in sections (toggled by <Reveal>) */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Staggered children inside a Reveal */
+.anim-stagger > * {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1), transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.is-visible .anim-stagger > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+.anim-stagger > *:nth-child(1) { transition-delay: 0ms; }
+.anim-stagger > *:nth-child(2) { transition-delay: 60ms; }
+.anim-stagger > *:nth-child(3) { transition-delay: 120ms; }
+.anim-stagger > *:nth-child(4) { transition-delay: 180ms; }
+.anim-stagger > *:nth-child(5) { transition-delay: 240ms; }
+.anim-stagger > *:nth-child(6) { transition-delay: 300ms; }
+.anim-stagger > *:nth-child(7) { transition-delay: 360ms; }
+.anim-stagger > *:nth-child(8) { transition-delay: 420ms; }
+
+/* Hero badge pulse dot */
+@keyframes ping-soft {
+  0% { transform: scale(1); opacity: 0.6; }
+  80%, 100% { transform: scale(1.8); opacity: 0; }
+}
+.ping-dot {
+  position: relative;
+}
+.ping-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: currentColor;
+  animation: ping-soft 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Respect reduced motion (kills all of the above) */
+@media (prefers-reduced-motion: reduce) {
+  .anim-rise,
+  .reveal,
+  .anim-stagger > * {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+  .ping-dot::after {
+    animation: none !important;
   }
 }
 

@@ -23,7 +23,10 @@ export function CurrencySelector({ compact = false }: { compact?: boolean }) {
           }
         }}
       >
-        <SelectTrigger className="h-9 gap-1 rounded-xl border-border/60 bg-background px-2.5 text-sm hover:bg-muted focus:ring-2 focus:ring-ring focus:ring-offset-1 data-[state=open]:bg-muted transition-colors">
+        <SelectTrigger
+          aria-label="Select display currency"
+          className="h-9 gap-1 rounded-xl border-border/60 bg-background px-2.5 text-sm hover:bg-muted focus:ring-2 focus:ring-ring focus:ring-offset-1 data-[state=open]:bg-muted transition-colors touch-manipulation"
+        >
           <div className="flex items-center gap-1">
             <span className="text-sm font-semibold">{currency.symbol}</span>
             <span className={compact ? 'text-sm font-medium' : 'hidden text-sm font-medium sm:inline'}>

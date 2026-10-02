@@ -79,7 +79,7 @@ export function Navbar() {
                         href={item.href}
                         aria-current={isActive ? 'page' : undefined}
                         className={cn(
-                          'relative flex h-9 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-medium transition-all duration-200',
+                          'relative flex h-9 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
                           isActive
                             ? 'bg-background text-foreground shadow-sm ring-1 ring-border/60'
                             : 'text-muted-foreground hover:text-foreground hover:bg-background/60'
@@ -111,7 +111,7 @@ export function Navbar() {
                     <button
                       type="button"
                       aria-label="Open menu"
-                      className="flex h-10 w-10 items-center justify-center rounded-xl border border-border/60 bg-background text-foreground transition-all hover:bg-muted active:scale-95 lg:hidden"
+                      className="flex h-10 w-10 items-center justify-center rounded-xl border border-border/60 bg-background text-foreground transition-colors hover:bg-muted active:scale-95 lg:hidden"
                     >
                       <Menu className="h-4 w-4" />
                       <span className="sr-only">Open menu</span>
@@ -120,7 +120,7 @@ export function Navbar() {
 
                   <SheetContent
                     side="top"
-                    className="h-auto max-h-[85dvh] overflow-y-auto rounded-b-3xl border-x-0 border-t-0 bg-background/95 backdrop-blur-xl p-0"
+                    className="h-auto max-h-[85dvh] overflow-y-auto overscroll-contain rounded-b-3xl border-x-0 border-t-0 bg-background/95 backdrop-blur-xl p-0"
                   >
                     <DialogTitle className="sr-only">FinPocket navigation</DialogTitle>
 
@@ -147,7 +147,7 @@ export function Navbar() {
                               href={item.href}
                               onClick={() => setIsOpen(false)}
                               className={cn(
-                                'group flex items-center gap-3 rounded-xl border p-3.5 transition-all active:scale-[0.98]',
+                                'group flex items-center gap-3 rounded-xl border p-3.5 transition-colors active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
                                 isActive
                                   ? 'border-foreground/20 bg-muted shadow-sm'
                                   : 'border-border/50 bg-card hover:bg-muted/60'
@@ -186,7 +186,7 @@ export function Navbar() {
                         <Link
                           href="/"
                           onClick={() => setIsOpen(false)}
-                          className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                          className="text-xs font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
                         >
                           Home
                         </Link>
