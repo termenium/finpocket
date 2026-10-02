@@ -1,6 +1,6 @@
 # FinPocket — Professional Financial Calculators
 
-A fast, private suite of financial calculators built with **Next.js 13 (App Router)**,
+A fast, private suite of financial calculators built with **Next.js 15 (App Router)**,
 **TypeScript**, **Tailwind CSS**, **shadcn/ui**, and **Recharts**. Everything runs
 client-side — no accounts, no tracking of your inputs, no server-side computation.
 
@@ -37,6 +37,28 @@ npm run dev      # http://localhost:3000
 npm run build    # static export to out/ (output: 'export')
 npm run lint
 ```
+
+## Deployment
+
+The build produces a **static export** in `out/` (`output: 'export'` in
+`next.config.js`), so there is no server to run. `vercel.json` pins the framework,
+build command, and that `out/` output directory.
+
+The repo root must be the Vercel project root. In **Project Settings → General**:
+
+| Setting | Value |
+|---|---|
+| Root Directory | *(leave empty / `.`)* |
+| Framework Preset | `Next.js` |
+| Install Command | `npm install` |
+| Build Command | `npm run build` |
+| Output Directory | `out` |
+
+A Root Directory of `app/` makes the build run in `app/`, where there is no
+`package.json`, and the deploy fails with
+`The Next.js output directory "out" was not found`. `vercel.json` is read from the
+Root Directory, so it cannot correct this setting — it has to be cleared in the
+dashboard.
 
 ## Data notes
 
