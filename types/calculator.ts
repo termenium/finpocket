@@ -119,4 +119,5 @@ export interface CalculatorCardProps {
   description: string;
   icon: React.ReactNode;
   href: string;
+  className?: string;
 }
